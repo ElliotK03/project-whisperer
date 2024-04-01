@@ -1,8 +1,10 @@
-// require('dotenv').config();
+require('dotenv').config();
 
 const { Builder, Browser } = require('selenium-webdriver');
+
 const express = require('express');
 const bodyParser = require('body-parser');
+const { Options } = require('selenium-webdriver/firefox');
 
 const app = express();
 const port = 1231;
@@ -14,17 +16,19 @@ app.get('/', (req, res) => {
 	res.send('Hello World!')
 })
 
-app.post('/', (req, res) => {
+app.post('/', async (req, res) => {
 	let data = req.body;
-	res.json({ "DataReceived": JSON.stringify(data) });
-	// res.json({ "message": "Hello" });
-	// res.json({ "message2": "HI THERE" });
-	// res.writeHead(200, { 'Content-Type': 'application/json' });
+	res.writeHead(200, { 'Content-Type': 'application/json' });
+	res.write(`{ "DataReceived": ${JSON.stringify(data)} }`);
 	try {
-			myTest(data.URL, res);
-	} catch (error) {
+			await myTest(data.URL, res);
+			res.write("End");
+		} catch (error) {
+			res.write("Error!");
 			console.log(error);
-	}
+		}
+		res.end()
+	
 })
 
 app.listen(port, () => {
@@ -33,20 +37,24 @@ app.listen(port, () => {
 
 // starts headless browser and navigates to the site
 async function myTest(URL, res) {
-	let driver = await new Builder().forBrowser(Browser.FIREFOX).build();
+	let driver = await new Builder()
+		.forBrowser(Browser.FIREFOX)
+		.setFirefoxOptions(new Options()
+		.addArguments('--headless'))
+		.build();
+		
 	await driver.get(URL);
-	// res.write(JSON.stringify({message: "opened site"}));
+	res.write(JSON.stringify({message: "opened site"}));
 
-	try {
-		await fillCreds(driver);
-	} catch (error) {
-		// res.write(JSON.stringify({errorMessage: error }));
-		console.log(error);
+	if (URL.startsWith("https://osc.mmu.edu.my/psc/csprd/EMPLOYEE/SA/c/N_PUBLIC.N_CLASS_QRSTUD_ATT.GBL")) {
+		try {
+			await fillCreds(driver);
+			res.write(JSON.stringify({message: "Credentials filled & submitted" , timestamp: Date.now()}));
+		} catch (error) {
+			res.write(JSON.stringify({errorMessage: error }));
+			console.log(error);
+		}
 	}
-	
-	// res.write(JSON.stringify({message: "Credentials filled & submitted" , timestamp: Date.now()}));
-	res.end()
-
 	setTimeout(() => { driver.quit(); }, 30000)
 };
 
