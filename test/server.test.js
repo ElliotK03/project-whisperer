@@ -1,7 +1,7 @@
 const supertest = require('supertest');
 //const app = require('../index');
 const request = supertest('http://localhost:1231');
-const { fillCreds } = require('../index'); // Import missing functions
+const { server } = require('../index'); // Import missing functions
 describe('GET /', function () {
     it('should return "Hello World!"', function (done) {
         request // Fix the app import
