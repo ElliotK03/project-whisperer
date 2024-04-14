@@ -7,7 +7,7 @@ describe('GET /', function () {
         request // Fix the app import
             .get('/')
             .expect(200)
-            .expect('Hello World!')
+            .expect('<form action="/" method="post"> <label for="URL">URL:</label> <input type="text" id="URL" name="URL"> <input type="submit" value="Submit"> </form>')
             .end(function (err) {
                 if (err) return done(err);
                 done();
