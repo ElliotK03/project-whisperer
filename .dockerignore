@@ -1,7 +1,14 @@
+dotenv
+dotenvx.exe
+gitleaks.exe
+.git
+.vscode
+.gitignore
+project_whisperer.tar
+AA
 node_modules
 npm-debug.log
 Dockerfile
 .dockerignore
-.env.keys
-.env.production
-.env.1
+.env*
+!.env.vault
