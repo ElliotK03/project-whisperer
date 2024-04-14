@@ -13,7 +13,9 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 app.get('/', (req, res) => {
-	res.send('Hello World!')
+	//res.send('Hello World!')
+	//add frontend with form to submit URL
+	res.send('<form action="/" method="post"> <label for="URL">URL:</label> <input type="text" id="URL" name="URL"> <input type="submit" value="Submit"> </form>')
 })
 
 app.post('/', async (req, res) => {
