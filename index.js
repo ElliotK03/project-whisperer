@@ -18,17 +18,20 @@ app.get('/', (req, res) => {
 
 app.post('/', async (req, res) => {
 	let data = req.body;
-	res.writeHead(200, { 'Content-Type': 'application/json' });
-	res.write(`{ "DataReceived": ${JSON.stringify(data)} }`);
-	try {
-			await myTest(data.URL, res);
+	res.writeHead(200, { 'Content-Type': 'text/plain' });
+	res.write(` "DataReceived": ${JSON.stringify(data)} \n`);
+	if (!isValidUrl(data.URL)) {
+		res.write("Error!");
+	} else {
+		try {
+			await navigateToSite(data.URL, res);
 			res.write("End");
 		} catch (error) {
 			res.write("Error!");
 			console.log(error);
 		}
 		res.end()
-	
+	}
 })
 
 app.listen(port, () => {
@@ -36,22 +39,22 @@ app.listen(port, () => {
 });
 
 // starts headless browser and navigates to the site
-async function myTest(URL, res) {
+async function navigateToSite(URL, res) {
 	let driver = await new Builder()
 		.forBrowser(Browser.FIREFOX)
 		.setFirefoxOptions(new Options()
-		.addArguments('--headless'))
+			.addArguments('--headless'))
 		.build();
-		
+
 	await driver.get(URL);
-	res.write(JSON.stringify({message: "opened site"}));
+	res.write(`message: "opened site\n`);
 
 	if (URL.startsWith("https://osc.mmu.edu.my/psc/csprd/EMPLOYEE/SA/c/N_PUBLIC.N_CLASS_QRSTUD_ATT.GBL")) {
 		try {
 			await fillCreds(driver);
-			res.write(JSON.stringify({message: "Credentials filled & submitted" , timestamp: Date.now()}));
+			res.write(`message: "Credentials filled & submitted" , timestamp: ${Date.now()} `);
 		} catch (error) {
-			res.write(JSON.stringify({errorMessage: error }));
+			res.write(`errorMessage: ${error} `);
 			console.log(error);
 		}
 	}
@@ -68,3 +71,14 @@ async function fillCreds(d) {
 		.sendKeys('\uE007')
 		.perform();
 }
+
+const isValidUrl = urlString => {
+	var urlPattern = new RegExp('^(https?:\\/\\/)?' + // validate protocol
+		'((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // validate domain name
+		'((\\d{1,3}\\.){3}\\d{1,3}))' + // validate OR ip (v4) address
+		'(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // validate port and path
+		'(\\?[;&a-z\\d%_.~+=-]*)?' + // validate query string
+		'(\\#[-a-z\\d_]*)?$', 'i'); // validate fragment locator
+	return !!urlPattern.test(urlString);
+}
+module.exports = { navigateToSite, isValidUrl };
