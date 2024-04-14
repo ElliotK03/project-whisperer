@@ -34,7 +34,7 @@ app.post('/', async (req, res) => {
 	}
 })
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
 	console.log(`App listening on port ${port}`)
 });
 
@@ -81,4 +81,4 @@ const isValidUrl = urlString => {
 		'(\\#[-a-z\\d_]*)?$', 'i'); // validate fragment locator
 	return !!urlPattern.test(urlString);
 }
-module.exports = { navigateToSite, isValidUrl };
+module.exports = { navigateToSite, isValidUrl, server };

@@ -112,3 +112,7 @@ describe('navigateToSite', () => {
         await navigateToSite('https://osc.mmu.edu.my/psc/csprd/EMPLOYEE/SA/c/N_PUBLIC.N_CLASS_QRSTUD_ATT.GBL', res);
     });
 }); */
+
+after(() => {
+    server.close();
+  });
