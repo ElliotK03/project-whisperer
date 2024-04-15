@@ -1,10 +1,12 @@
 require('dotenv').config();
 
-const { Builder, Browser } = require('selenium-webdriver');
+const puppeteer = require('puppeteer-extra');
+
+const StealthPlugin = require('puppeteer-extra-plugin-stealth')
+puppeteer.use(StealthPlugin())
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const { Options } = require('selenium-webdriver/firefox');
 
 const app = express();
 const port = 8080;
@@ -33,8 +35,8 @@ app.post('/', async (req, res) => {
 			res.write("Error!");
 			console.log(error);
 		}
-		res.end()
 	}
+	res.end()
 })
 
 const server = app.listen(port, () => {
@@ -42,37 +44,40 @@ const server = app.listen(port, () => {
 });
 
 // starts headless browser and navigates to the site
+let browser, timeout;
 async function navigateToSite(URL, res) {
-	let driver = await new Builder()
-		.forBrowser(Browser.FIREFOX)
-		.setFirefoxOptions(new Options()
-			.addArguments('--headless'))
-		.build();
+	browser = await puppeteer.launch({ headless: false });
+	const page = await browser.newPage();
 
-	await driver.get(URL);
+	await page.goto(URL);
 	res.write(`message: "opened site\n`);
 
 	if (URL.startsWith("https://osc.mmu.edu.my/psc/csprd/EMPLOYEE/SA/c/N_PUBLIC.N_CLASS_QRSTUD_ATT.GBL")) {
 		try {
-			await fillCreds(driver);
+			let elementText = await page.$eval('.PAPAGETITLE', element => element.textContent);
+			if (elementText != "Attendance Signin") {
+				await page.cookies().then(pageCookies =>
+					pageCookies.forEach(async element => await page.deleteCookie(element.name))
+				);
+				await page.goto(URL);
+			}
+			await fillCreds(page);
 			res.write(`message: "Credentials filled & submitted" , timestamp: ${Date.now()} `);
 		} catch (error) {
 			res.write(`errorMessage: ${error} `);
 			console.log(error);
 		}
 	}
-	setTimeout(() => { driver.quit(); }, 30000)
-};
+	timeout = setTimeout(async () => await browser.close(), 30000);
+}
 
-async function fillCreds(d) {
+async function fillCreds(page) {
 	let username = '1211111316';
-	await d.actions()
-		.sendKeys(username)
-		.sendKeys('\uE004')
-		.sendKeys(process.env.PW1)
-		.sendKeys('\uE004')
-		.sendKeys('\uE007')
-		.perform();
+	await page.type(':focus', username);
+	await page.keyboard.press('Tab');
+	await page.type(':focus', process.env.PW1);
+	await page.keyboard.press('Tab');
+	await page.click(':focus');
 }
 
 const isValidUrl = urlString => {
@@ -84,4 +89,4 @@ const isValidUrl = urlString => {
 		'(\\#[-a-z\\d_]*)?$', 'i'); // validate fragment locator
 	return !!urlPattern.test(urlString);
 }
-module.exports = { navigateToSite, isValidUrl, server };
+module.exports = { navigateToSite, isValidUrl, server, browser, timeout };

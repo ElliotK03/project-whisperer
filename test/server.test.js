@@ -1,9 +1,8 @@
 const supertest = require('supertest');
-//const app = require('../index');
 const request = supertest('http://localhost:8080');
-const { server } = require('../index'); // Import missing functions
+const { server, navigateToSite } = require('../index'); // Import missing functions
 describe('GET /', function () {
-    it('should return "Hello World!"', function (done) {
+    it('should return HTML input form', function (done) {
         request // Fix the app import
             .get('/')
             .expect(200)
@@ -22,15 +21,28 @@ describe('POST /', function () {
             .send({ URL: 'https://example.com' })
             .expect(200)
             .expect(' "DataReceived": {"URL":"https://example.com"} \nmessage: "opened site\nEnd')
-            .end(function (err) {
+            .end(async function (err) {
                 if (err) return done(err);
                 done();
             });
     });
 
+    it('should handle non-URL input strings and return "Error!"', function (done) {
+        request // Fix the app import
+            .post('/')
+            .send({ URL: 'https://invalid-url' })
+            .expect(200)
+            .expect(' "DataReceived": {"URL":"https://invalid-url"} \nError!')
+            .end(async function (err) {
+                if (err) return done(err);
+                done();
+            });
+    });
+
+
 });
 
-/* describe('navigateToSite', function () {
+describe('navigateToSite', function () {
     it('should open the site and return "opened site"', function (done) {
         const res = {
             write: function () { },
@@ -46,7 +58,7 @@ describe('POST /', function () {
             });
     });
 });
-
+/*
 describe('fillCreds', function () {
     it('should fill credentials and submit', function (done) {
         const driver = {
