@@ -44,9 +44,9 @@ const server = app.listen(port, () => {
 });
 
 // starts headless browser and navigates to the site
-let browser, timeout;
+
 async function navigateToSite(URL, res) {
-	browser = await puppeteer.launch({ headless: false });
+	const browser = await puppeteer.launch({ headless: true });
 	const page = await browser.newPage();
 
 	await page.goto(URL);
@@ -68,7 +68,7 @@ async function navigateToSite(URL, res) {
 			console.log(error);
 		}
 	}
-	timeout = setTimeout(async () => await browser.close(), 30000);
+	setTimeout(async () => await browser.close(), 30000);
 }
 
 async function fillCreds(page) {
@@ -89,4 +89,4 @@ const isValidUrl = urlString => {
 		'(\\#[-a-z\\d_]*)?$', 'i'); // validate fragment locator
 	return !!urlPattern.test(urlString);
 }
-module.exports = { navigateToSite, isValidUrl, server, browser, timeout };
+module.exports = { navigateToSite, isValidUrl, server };
