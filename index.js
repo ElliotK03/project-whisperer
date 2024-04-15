@@ -46,7 +46,7 @@ const server = app.listen(port, () => {
 // starts headless browser and navigates to the site
 
 async function navigateToSite(URL, res) {
-	const browser = await puppeteer.launch({ headless: true });
+	const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
 	const page = await browser.newPage();
 
 	await page.goto(URL);
