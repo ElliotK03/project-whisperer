@@ -2,5 +2,6 @@
 *.tar
 .env*
 .flaskenv*
-!.env.project
-!.env.vault
+*.exe
+*.txt
+.env.vault
