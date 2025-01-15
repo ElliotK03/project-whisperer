@@ -5,6 +5,9 @@ const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth')
 puppeteer.use(StealthPlugin())
 
+/**
+*  Simple HTML page
+**/
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -43,7 +46,9 @@ const server = app.listen(port, () => {
 	console.log(`App listening on port ${port}`)
 });
 
-// starts headless browser and navigates to the site
+/** 
+ *  handles starting headless browser and navigating to the site
+ **/ 
 
 async function navigateToSite(URL, res) {
 	const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
@@ -71,6 +76,10 @@ async function navigateToSite(URL, res) {
 	setTimeout(async () => await browser.close(), 30000);
 }
 
+/**
+*  Browser automation
+**/
+
 async function fillCreds(page) {
 	let username = '1211111316';
 	await page.type(':focus', username);
@@ -79,6 +88,10 @@ async function fillCreds(page) {
 	await page.keyboard.press('Tab');
 	await page.click(':focus');
 }
+
+/**
+ *  RegExp URL checking
+ **/
 
 const isValidUrl = urlString => {
 	var urlPattern = new RegExp('^(https?:\\/\\/)?' + // validate protocol
