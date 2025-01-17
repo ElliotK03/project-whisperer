@@ -9,14 +9,4 @@ client.on("ready", () => {
 });
 client.login();
 
-const appendEditTimeout = (m, appendContent, timeout = 0) => {
-	if (timeout) {
-		setTimeout(() => {
-			return m.edit(`${m.content}\n${appendContent}`);
-		}, timeout);
-	} else {
-		return m.edit(`${m.content}\n${appendContent}`);
-	}
-}
-
-module.exports = { client, appendEditTimeout }
+module.exports = { client }

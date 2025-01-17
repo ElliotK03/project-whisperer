@@ -1,26 +1,11 @@
-//defining logger transports
-const Transport = require('winston-transport');
-class CustomTransport_SSE extends Transport {
-	constructor(opts) {
-		super(opts);
-	}
-
-	log(info, callback) {
-		setImmediate(() => {
-			this.emit('logged', info);
-		});
-
-		info.res.write(`data: ${info.message}\n\n`);
-		callback();
-	}
-};
-
+//Winston logger instance and custom transports
+const { logger, CustomTransport_SSE, GuildedBotTransport } = require("./logger.js");
 const SSE_Transport = new CustomTransport_SSE();
+const GuildedBot_Transport = new GuildedBotTransport();
 
 //other dependencies
 require('dotenv').config();
-const { logger } = require("./logger.js");
-const { client, appendEditTimeout } = require('./bot.js'); //guilded bot
+const { client } = require('./bot.js'); //guilded bot
 
 const puppeteer = require('puppeteer-extra');
 
@@ -38,8 +23,7 @@ const app = express(), port = 8080;
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
-//cache submitted data
-let submittedData = null;
+let submittedData = null; //cache submitted data
 
 app.get('/', (req, res) => {
 	res.type('html');
@@ -112,14 +96,12 @@ app.get('/', (req, res) => {
 });
 
 app.all('/send', async (req, res) => {
-
-	if (req.method === "POST") {
-		const { input } = req.body
+	if (req.method === "POST") { //form submission
+		const { input } = req.body //extract data from input
+		submittedData = input;
 
 		res.json({ message: "Data received successfully ", input });
-
-		submittedData = input;
-	} else if (req.method === "GET") {
+	} else if (req.method === "GET") { //SSE subscription
 		let data = null;
 		if (!submittedData) {
 			res.write("error: no data", (e) => {
@@ -136,17 +118,13 @@ app.all('/send', async (req, res) => {
 		res.flushHeaders();
 
 		res.on("close", () => res.end());
-		// res.on("error", (e) => console.error(e));
+		res.on("error", (e) => console.error(e));
 
 		logger.add(SSE_Transport);
 
-		// res.write('retry: 10000\n\n');
-
-		// res.write(` "DataReceived": ${JSON.stringify(data)} \n`);
 		logger.log({ 'level': 'info', 'message': `DataReceived "${data}"`, res })
 
 		if (!isValidUrl(data)) {
-			// res.write(`message: "Error!"\n\n`);
 			logger.log({ 'level': 'info', 'message': 'Invalid URL', res })
 		} else {
 			try {
@@ -164,6 +142,7 @@ app.all('/send', async (req, res) => {
 	}
 })
 
+//express.js server
 const server = app.listen(port, () => {
 	console.log(`App listening on port ${port}`)
 });
@@ -179,7 +158,7 @@ async function navigateToSite(URL, res) {
 	logger.log({ 'level': 'info', 'message': `Navigating to ${URL}\n\n`, res })
 	await page.goto(URL);
 	logger.log({ 'level': 'info', 'message': `Navigation done`, res })
-	
+
 	//this is the magic part
 	if (URL.startsWith("https://osc.mmu.edu.my/psc/csprd/EMPLOYEE/SA/c/N_PUBLIC.N_CLASS_QRSTUD_ATT.GBL")) {
 		try {
@@ -230,26 +209,27 @@ const isValidUrl = urlString => {
 
 //guilded bot
 client.on("messageCreated", async (message) => {
-	let m = message.content.toLocaleLowerCase();
+	let m = message.content.toLocaleLowerCase().split(' ');
 
-	if (m === "poggers") {
+	if (m[0] === "poggers") {
 		return message.reply("test indeed");
 	}
 
-	if (isValidUrl(m)) {
+	if (isValidUrl(m[0])) {
+		let URL = m[0];
+		let res;
+		await message.reply("Message received...\n").then((msg) => res = msg); //res = the response message by the bot
+		logger.add(GuildedBot_Transport);
+
+		logger.log({ 'level': 'info', 'message': `test`, res })
 		try {
-			await navigateToSite(data, res);
-			// res.write("End");
+			logger.log({ 'level': 'info', 'message': `test again`, res })
+			await navigateToSite(URL, res);
 		} catch (error) {
-			// res.write("Error!");
 			console.log(error);
 		}
-		return;
+		return logger.remove(GuildedBot_Transport);
 	}
 });
-
-function errorCallback(error) {
-	if (error) console.error(error);
-}
 
 module.exports = { navigateToSite, isValidUrl, server };
