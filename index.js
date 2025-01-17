@@ -10,13 +10,14 @@ class CustomTransport_SSE extends Transport {
 			this.emit('logged', info);
 		});
 
-		info.res.write(`{data: "${info.message}}\n\n"`);
+		info.res.write(`data: ${info.message}\n\n`);
 		callback();
 	}
 };
 
 const SSE_Transport = new CustomTransport_SSE();
 
+//other dependencies
 require('dotenv').config();
 const { logger } = require("./logger.js");
 const { client, appendEditTimeout } = require('./bot.js'); //guilded bot
@@ -115,7 +116,7 @@ app.all('/send', async (req, res) => {
 	if (req.method === "POST") {
 		const { input } = req.body
 
-		res.json({ message: "Data received successfully", input });
+		res.json({ message: "Data received successfully ", input });
 
 		submittedData = input;
 	} else if (req.method === "GET") {
@@ -134,30 +135,32 @@ app.all('/send', async (req, res) => {
 		});
 		res.flushHeaders();
 
-		// res.on("close", () => res.end());
-		res.on("error", (e) => console.error(e));
+		res.on("close", () => res.end());
+		// res.on("error", (e) => console.error(e));
 
 		logger.add(SSE_Transport);
 
 		// res.write('retry: 10000\n\n');
 
 		// res.write(` "DataReceived": ${JSON.stringify(data)} \n`);
-		logger.log({ 'level': 'info', 'message': `"DataReceived" ${JSON.stringify(data)}`, res })
+		logger.log({ 'level': 'info', 'message': `DataReceived "${data}"`, res })
 
 		if (!isValidUrl(data)) {
-			// res.write(`data: "Error!"\n\n`);
-			logger.log({ 'level': 'info', 'message': `"Invalid URL"`, res })
+			// res.write(`message: "Error!"\n\n`);
+			logger.log({ 'level': 'info', 'message': 'Invalid URL', res })
 		} else {
 			try {
 				await navigateToSite(data, res);
-				// res.write(`data: "End"\n\n`);
+				logger.log({ 'level': 'info', 'message': 'End of task...', res });
 			} catch (error) {
-				// res.write(`data: "Error!"\n\n`);
+				res.write(`{'data': 'Error!'\n\n}`);
 				console.log(error);
 			}
 		}
+		logger.log({ 'level': 'info', 'message': 'Connection closing..', res });
 		logger.remove(SSE_Transport);
 		res.end();
+		submittedData = null;
 	}
 })
 
@@ -173,10 +176,10 @@ async function navigateToSite(URL, res) {
 	const browser = await puppeteer.launch({ headless: false, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
 	const page = await browser.newPage();
 
-	res.write(`data: "Navigating to ${URL}"\n\n`);
+	logger.log({ 'level': 'info', 'message': `Navigating to ${URL}\n\n`, res })
 	await page.goto(URL);
-	res.write(`data: "Navigation successful"\n\n`);
-
+	logger.log({ 'level': 'info', 'message': `Navigation done`, res })
+	
 	//this is the magic part
 	if (URL.startsWith("https://osc.mmu.edu.my/psc/csprd/EMPLOYEE/SA/c/N_PUBLIC.N_CLASS_QRSTUD_ATT.GBL")) {
 		try {
@@ -188,9 +191,10 @@ async function navigateToSite(URL, res) {
 				await page.goto(URL);
 			}
 			await fillCreds(page);
-			res.write(`message: "Credentials filled & submitted" , timestamp: ${Date.now()} `);
+			await page.goto(URL);
+			logger.log({ 'level': 'info', 'message': `Credentials filled & submitted , timestamp: ${Date.now()} `, res })
 		} catch (error) {
-			res.write(`errorMessage: ${error} `);
+			logger.log({ 'level': 'info', 'message': `errorMessage: ${error} `, res })
 			console.log(error);
 		}
 	}
