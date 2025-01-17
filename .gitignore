@@ -1,7 +1,8 @@
-"node_modules/" 
 *.tar
 .env*
 .flaskenv*
 *.exe
 *.txt
 .env.vault
+node_modules
+.vscode
