@@ -92,7 +92,7 @@ const server = app.listen(port, () => {
  **/
 
 async function navigateToSite(URL, res) {
-	const browser = await puppeteer.launch({ headless: false, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+	const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
 	const page = await browser.newPage();
 
 	logger.log({ 'level': 'info', 'message': `Navigating to ${URL}\n\n`, res });
