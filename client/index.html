@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Form Submission</title>
+</head>
+<body>
+	<form action="/send" method="post" id="theform">
+		<label for="URL">URL:</label>
+		<input type="text" id="URLinput" name="URL">
+		<input type="submit" value="Submit" id="submitButton">
+		<output style="visibility: hidden;"></output>
+	</form>
+	<div id="messages"></div>
+	<script src="script.js" defer></script>
+</body>
+</html>
