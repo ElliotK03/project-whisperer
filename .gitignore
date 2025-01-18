@@ -1,6 +1,10 @@
 *.tar
 .env*
 .flaskenv*
-!.env.project
-!.env.vault
-node_modules/
+*.exe
+*.txt
+.env.vault
+node_modules
+.vscode
+token.json
+*.log
