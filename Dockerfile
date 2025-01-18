@@ -7,7 +7,8 @@ WORKDIR /home/node/project_whisperer
 RUN curl -fsS https://dotenvx.sh/ | sh
 
 #Install firefox
-RUN apk update && apk add firefox 
+RUN apk update && apk add chromium 
+ENV PUPPETEER_EXECUTABLE_PATH='/usr/bin/chromium'
 
 COPY package*.json ./
 RUN npm install --omit=dev --omit=peer
