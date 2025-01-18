@@ -13,7 +13,7 @@ COPY package*.json ./
 RUN npm install --omit=dev --omit=peer
 RUN npm update -g
 COPY . .
-EXPOSE 1231
+EXPOSE 8080
 
 # Prepend dotenvx run
 CMD ["node", "index.js"]
