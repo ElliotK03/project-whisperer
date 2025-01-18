@@ -1,20 +1,7 @@
 const winston = require("winston");
-// const { appendEditTimeout } = await import("./bot.js");
+const Transport = require('winston-transport');
 
-// const botTransport = {
-//     log: async (info, callback, GuildedMessage) => {
-//         // Your custom logging logic goes here
-//         // console.log(`Custom transport: ${info.level} - ${info.message}`);
-//         try {
-//             await appendEditTimeout(GuildedMessage, info.message);
-//         } catch (error) {
-//             console.error(error)
-//             callback(error);
-//         }
-//         // Call the callback to signal that the log has been processed
-//     },
-// };
-
+//setting up logger
 const logger = winston.createLogger({
     level: 'info', // Default logging level
     format: winston.format.combine(
@@ -29,4 +16,38 @@ const logger = winston.createLogger({
     ],
 });
 
-module.exports = { logger }
+//defining logger transports
+class CustomTransport_SSE extends Transport {
+    constructor(opts) {
+        super(opts);
+    }
+
+    log(info, callback) {
+        setImmediate(() => {
+            this.emit('logged', info);
+        });
+
+        info.res.write(`data: ${info.message}\n\n`);
+        callback();
+    }
+};
+
+class GuildedBotTransport extends Transport {
+    constructor(opts) {
+        super(opts);
+    }
+    async log(info, callback) {
+        setImmediate(() => {
+            this.emit('logged', info);
+        });
+        try {
+            await info.res.edit(`${info.res.content}\n${info.message}`);
+            callback();
+        } catch (error) {
+            console.error(error)
+            callback(error);
+        }
+    }
+};
+
+module.exports = { logger, CustomTransport_SSE, GuildedBotTransport }
