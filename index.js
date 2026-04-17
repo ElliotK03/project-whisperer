@@ -1,11 +1,11 @@
 //Winston logger instance and custom transports
 const { logger, CustomTransport_SSE, GuildedBotTransport } = require("./logger.js");
 const SSE_Transport = new CustomTransport_SSE();
-const GuildedBot_Transport = new GuildedBotTransport();
+// const GuildedBot_Transport = new GuildedBotTransport();
 
 //other dependencies
 require('dotenv').config();
-const { client } = require('./bot.js'); //guilded bot
+// const { client } = require('./bot.js'); //guilded bot
 
 const puppeteer = require('puppeteer-extra');
 
@@ -148,28 +148,28 @@ const isValidUrl = urlString => {
 }
 
 //guilded bot
-client.on("messageCreated", async (message) => {
-	let m = message.content.toLocaleLowerCase().split(' ');
+// client.on("messageCreated", async (message) => {
+// 	let m = message.content.toLocaleLowerCase().split(' ');
 
-	if (m[0] === "poggers") {
-		return message.reply("test indeed");
-	}
+// 	if (m[0] === "poggers") {
+// 		return message.reply("test indeed");
+// 	}
 
-	if (isValidUrl(m[0])) {
-		let URL = m[0];
-		let res;
-		await message.reply("Message received...\n").then((msg) => res = msg); //res = the response message by the bot
-		logger.add(GuildedBot_Transport);
+// 	if (isValidUrl(m[0])) {
+// 		let URL = m[0];
+// 		let res;
+// 		await message.reply("Message received...\n").then((msg) => res = msg); //res = the response message by the bot
+// 		logger.add(GuildedBot_Transport);
 
-		logger.log({ 'level': 'info', 'message': `test`, res });
-		try {
-			logger.log({ 'level': 'info', 'message': `test again`, res });
-			await navigateToSite(URL, res);
-		} catch (error) {
-			console.error(error);
-		}
-		return logger.remove(GuildedBot_Transport);
-	}
-});
+// 		logger.log({ 'level': 'info', 'message': `test`, res });
+// 		try {
+// 			logger.log({ 'level': 'info', 'message': `test again`, res });
+// 			await navigateToSite(URL, res);
+// 		} catch (error) {
+// 			console.error(error);
+// 		}
+// 		return logger.remove(GuildedBot_Transport);
+// 	}
+// });
 
 module.exports = { navigateToSite, isValidUrl, server };
