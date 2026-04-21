@@ -8,7 +8,7 @@ This is just a browser automation playground.
 
 > This project is created for testing purposes only. Use at your own risk.
 
-This project is the solution for student who ~~can't (or won't) make it to class~~ wants to dip their toes in browser automation. Automate your attendance-taking with browser automation.
+This project is created for students who ~~can't (or won't) make it to class~~ wants to dip their toes in browser automation.
 
 ## Features
 
