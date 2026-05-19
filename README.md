@@ -1,105 +1,116 @@
-# Project whisperer
+# project-whisperer
 
-This is just a browser automation playground.
+A browser automation project with real-time log streaming to a web frontend.
+Built to learn how headless browsers, SSE, and Docker fit together in a Node.js backend.
 
-*Seriously tho, don't skip your classes*
-
-## Overview
-
-> This project is created for testing purposes only. Use at your own risk.
-
-This project is created for students who ~~can't (or won't) make it to class~~ wants to dip their toes in browser automation.
+---
 
 ## Features
 
-- Real-time SSE logging via web frontend
-- Headless browser automation with Puppeteer
-- Credential management via environment variables
-- Docker containerization support
-- Extensible logging framework (Winston)
+- Headless browser automation with Puppeteer — logs in and submits forms on a target web portal
+- Live log streaming to the frontend using Server-Sent Events (SSE) — no polling
+- Structured logging with Winston, extended with a custom SSE transport
+- Credentials managed through environment variables (dotenv)
+- Docker support — tested on Koyeb and Azure App Service
+- Mocha tests for core logic
 
-## Tech stack
+---
 
-Language: JavaScript (NodeJS).
+## Tech Stack
 
-Frameworks: guilded.js, express, puppeteer, dotenv, winston
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js |
+| Server | Express |
+| Automation | Puppeteer |
+| Logging | Winston + custom SSE transport |
+| Real-time | Server-Sent Events (SSE) |
+| Config | dotenv |
+| Testing | Mocha |
+| Container | Docker |
 
-Tools: Docker (optional)
+---
 
-## Project structure
+## Project Structure
 
-```yaml
+```
 project-whisperer/
-├── index.js # Main server & automation logic
-├── bot.js # Guilded bot (legacy/disabled)
-├── logger.js # Winston logger + custom transports
-├── client/ # HTML frontend
-├── test/ # Mocha test suite
-└── Dockerfile # Container configuration
+├── index.js        # Express server, SSE endpoint, automation logic
+├── bot.js          # Old bot integration (disabled)
+├── logger.js       # Winston logger with custom SSE transport
+├── client/         # HTML frontend for live log display
+├── test/           # Mocha tests
+└── Dockerfile
 ```
 
-## How it works
+---
 
-- Winston for logging
+## How It Works
 
-- Puppeteer (or Selenium in the older `selenium` branch) for browser automation, dotenv to store password while username is hardcoded
+1. Frontend sends a trigger link to the Express server
+2. Server starts a Puppeteer browser session to automate the target portal
+3. Each step logs an event through Winston
+4. A custom Winston transport pipes those log events into an open SSE connection
+5. Frontend receives and displays the updates live
 
-- Guilded bot (disabled) and HTML frontend to receive attendance link
+The SSE transport is the interesting part — instead of adding WebSockets, Winston's transport interface is extended to write directly into the SSE response stream. Keeps things simple.
 
-- Automation pipeline starts as soon as the link is received
+---
 
-  - If you're using HTML frontend, the results are updated in real-time through Server-Sent Events (SSE)
-
-  - If you were sending the link through the bot, it sends replies as updates
-
-Apart from running the scripts in NodeJS, you can also build a Docker image to run it in a container.
-
-**Note that the bot in this repo no longer works as Guilded platform has been shut down.** The existing Guilded bot code is disabled and abandoned in place.
-
-## How to use
+## Getting Started
 
 ### Prerequisites
 
 - Node.js v18.8.0 or v22.22.0
 - npm or yarn
-- (Optional) Docker & Docker Compose for containerized deployment
+- Docker (optional)
 
-### Selfhosting
+### Local setup
 
-*This part will not cover the Guilded bot setup.*
+1. Clone the repo:
+   ```bash
+   git clone https://github.com/ElliotK03/project-whisperer.git
+   cd project-whisperer
+   ```
 
-Dependencies may be out-of-date. The server requires Node v18.8.0 (tested also with v22.22.0)
+2. Create a `.env` file:
+   ```
+   PW1='your_credential_here'
+   ```
 
-1. Clone this repo
+3. Install and run:
+   ```bash
+   npm install
+   node index.js
+   ```
 
-2. Create a file called `.env`, this file will look something like:
+4. Open the frontend in your browser to trigger and monitor the automation.
 
-    ```bash
-     PW1='yourpasswordhere'
-    ```
+### Docker
 
-    Alternatively, you can put your password string in an environment variable called `PW1`
+```bash
+docker build -t project-whisperer .
+docker run --env-file .env -p 3000:3000 project-whisperer
+```
 
-3. Install dependencies: `npm install`
-
-4. Run the server: `node index.js`
-
-### Cloud Hosting
-
-With the docker image, it's possible to host this project anywhere that Docker is supported. Personally I tried Koyeb and Azure App Server.
-
-Read the documentations for your selected cloud hosting platform.
+---
 
 ## Testing
 
-Run tests with:
+```bash
+npm test
+```
 
-  ```bash
-  npm test
-  ```
+---
 
 ## Known Limitations
 
-- Username is hardcoded; only password is env-based
-- Guilded bot functionality is disabled (platform shutdown)
-- Browser automation targets specific MMU attendance portal
+- Username is hardcoded; only the password goes through `.env` (will fix in the future)
+- The old Guilded bot is disabled (platform shut down)
+- Puppeteer automation is written for a specific portal, not generalised
+
+---
+
+## Notes
+
+Main things I was trying to learn here: Puppeteer automation, building a custom Winston transport, and getting Docker deployment working end-to-end.
